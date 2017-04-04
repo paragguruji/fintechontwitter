@@ -1,0 +1,6 @@
+name: fintechontwitter-env
+
+dependencies:
+- python=2.7
+- numpy
+- pandas
