@@ -8,6 +8,9 @@ Created on Wed Apr 05 17:53:34 2017
 # from fintechontwitter.fintechontwitter import DATAFRAME as df
 import re
 
+key_sequence = ['urls', 'html_tags', 'user_mentions', 'hashtags', 'emoticons',
+                'numbers', 'words', 'characters', 'misc']
+
 regex_strings = {
         "emoticons": r"""(?:[%s][%s]?[%s])""" % tuple(map(re.escape,
                                                           [r":;8BX=",
@@ -19,32 +22,34 @@ regex_strings = {
         "urls": r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&amp;+]|[!*\(\),]|\
                 (?:%[0-9a-fA-F][0-9a-fA-F]))+",
         "numbers": r'(?:(?:\d+,?)+(?:\.?\d+)?)',
-        "words": r"(?:[a-zA-Z0-9]+[-'_]*[a-zA-Z0-9]+)",
+        "words": r"(?:[a-zA-Z0-9]+(?:[-'_]*[a-zA-Z0-9]+)+)",
         "characters": r'(?:[\w])',
         "misc": r'(?:[^\w ]+)'}
 
 
-tokens_re = re.compile(r'('+'|'.join([regex_strings['urls'],
-                                      regex_strings['html_tags'],
-                                      regex_strings['user_mentions'],
-                                      regex_strings['hashtags'],
-                                      regex_strings['emoticons'],
-                                      regex_strings['numbers'],
-                                      regex_strings['words'],
-                                      regex_strings['characters'],
-                                      regex_strings['misc']])+')',
+tokens_re = re.compile(r'(' +
+                       r'|'.join([regex_strings[k] for k in key_sequence]) +
+                       r')',
                        re.VERBOSE)
+plaintext_re = re.compile(r'(' +
+                          r'|'.join([regex_strings[k]
+                                     for k in
+                                     ['numbers', 'hashtags',
+                                      'words', 'characters']]) +
+                          r')')
 regex = {key: re.compile(r'^' + pattern + '$', re.VERBOSE)
          for key, pattern in regex_strings.items()}
 
 
-def preprocess(s, lowercase=False):
+def preprocess(s):
     tokens = tokens_re.findall(s)
+    plaintext = s
     classified_tokens = {}
-    if lowercase:
-        tokens = [token if regex["emoticons"].search(token) else token.lower()
-                  for token in tokens]
-    for key in regex_strings:
+    for key in key_sequence:
         classified_tokens[key] = [token for token in tokens
                                   if regex[key].search(token)]
+        if key not in ['words', 'numbers', 'hashtags', 'characters', 'misc']:
+            plaintext = re.sub(regex_strings[key], "", plaintext)
+    classified_tokens['plaintext'] = \
+        ' '.join(plaintext_re.findall(plaintext)).replace('#', '')
     return classified_tokens
