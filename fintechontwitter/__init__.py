@@ -57,6 +57,4 @@ DATAFRAME.loc[:, 'followers'] = pandas.to_numeric(DATAFRAME['followers'],
 DATAFRAME.loc[:, 'date'] = pandas.to_datetime(DATAFRAME['date'],
                                               errors='coerce',
                                               infer_datetime_format=True)
-DATAFRAME['retweet'] = DATAFRAME['tweet'].map(lambda x: x.startswith("RT"))
-DATAFRAME['tokens '] = DATAFRAME['tweet'].map(lambda x: re.sub(r"http\S+", "", x))
-DATAFRAME['hashtags'] = DATAFRAME['text'].map(lambda x: pandas.Series(re.findall(r"#(\w+)", x)))
+

@@ -7,6 +7,7 @@ Created on Wed Apr 05 17:53:34 2017
 
 # from fintechontwitter.fintechontwitter import DATAFRAME as df
 import re
+from collections import Counter
 
 key_sequence = ['urls', 'html_tags', 'user_mentions', 'hashtags', 'emoticons',
                 'numbers', 'words', 'characters', 'misc']
@@ -42,6 +43,9 @@ regex = {key: re.compile(r'^' + pattern + '$', re.VERBOSE)
 
 
 def preprocess(s):
+    s = s.replace('\N', ' ').replace('\n', ' ').strip()
+    while('  ' in s):
+        s = s.replace('  ', ' ')
     tokens = tokens_re.findall(s)
     plaintext = s
     classified_tokens = {}
@@ -52,4 +56,6 @@ def preprocess(s):
             plaintext = re.sub(regex_strings[key], "", plaintext)
     classified_tokens['plaintext'] = \
         ' '.join(plaintext_re.findall(plaintext)).replace('#', '')
+    classified_tokens['rt'] = s.startswith('RT')
+    classified_tokens['words'] = Counter(classified_tokens['words'])
     return classified_tokens
